@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BankingManagementSystem.Core/BankingManagementSystem.Core.csproj" />
+  <Project Path="BankingManagementSystem.Infrastructure/BankingManagementSystem.Infrastructure.csproj" />
+  <Project Path="BankingManagementSystem.Tests/BankingManagementSystem.Tests.csproj" />
+  <Project Path="BankingManagementSystem.Web/BankingManagementSystem.Web.csproj" />
+</Solution>
