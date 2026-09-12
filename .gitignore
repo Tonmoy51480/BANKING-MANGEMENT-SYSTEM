@@ -1,0 +1,21 @@
+## Ignore Visual Studio & .NET temporary build artifacts
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+## OS Files
+.DS_Store
+Thumbs.db
+
+## Secrets & local environment settings
+appsettings.Production.json
+*.local.json
+.env
