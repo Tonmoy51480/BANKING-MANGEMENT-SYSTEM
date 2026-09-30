@@ -1,0 +1,333 @@
+@using Microsoft.AspNetCore.Identity
+@using BankingManagementSystem.Core.Entities
+@using BankingManagementSystem.Core.Constants
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SecureBank Core Enterprise</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Font Awesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        var fullName = currentUser?.FullName ?? User.Identity?.Name ?? "User";
+        var userEmail = currentUser?.Email ?? "";
+        var role = User.IsInRole(Roles.Admin) ? "System Admin" : User.IsInRole(Roles.Employee) ? "Bank Officer" : "Customer";
+        var initials = string.Concat(fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(s => s[0]));
+
+        <div class="app-wrapper">
+            <!-- Sidebar -->
+            <aside class="app-sidebar no-print">
+                <div class="sidebar-header">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                    <div>
+                        <div class="brand-title">SecureBank</div>
+                        <div class="brand-sub">Core Enterprise</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-nav">
+                    <div class="nav-section-title">Core Management</div>
+                    <a asp-controller="Dashboard" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+                    {
+                        <div class="nav-section-title">Customer & Accounts</div>
+                        <a asp-controller="Customer" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active" : "")">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Customers</span>
+                        </a>
+                        <a asp-controller="BankAccounts" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "BankAccounts" ? "active" : "")">
+                            <i class="fa-solid fa-vault"></i>
+                            <span>Bank Accounts</span>
+                        </a>
+
+                        <div class="nav-section-title">Transactions & Cash</div>
+                        <a asp-controller="Transaction" asp-action="Deposit" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transaction" && ViewContext.RouteData.Values["action"]?.ToString() == "Deposit" ? "active" : "")">
+                            <i class="fa-solid fa-circle-arrow-down text-success"></i>
+                            <span>Deposit Cash</span>
+                        </a>
+                        <a asp-controller="Transaction" asp-action="Withdraw" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transaction" && ViewContext.RouteData.Values["action"]?.ToString() == "Withdraw" ? "active" : "")">
+                            <i class="fa-solid fa-circle-arrow-up text-danger"></i>
+                            <span>Withdraw Cash</span>
+                        </a>
+                        <a asp-controller="Transfer" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transfer" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                            <i class="fa-solid fa-money-bill-transfer"></i>
+                            <span>Fund Transfer</span>
+                        </a>
+                        <a asp-controller="Transaction" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transaction" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>Transaction History</span>
+                        </a>
+
+                        <div class="nav-section-title">Credit & Cards</div>
+                        <a asp-controller="Loan" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Loan" ? "active" : "")">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                            <span>Loan Management</span>
+                        </a>
+                        <a asp-controller="Card" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Card" ? "active" : "")">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <span>Card Management</span>
+                        </a>
+
+                        <div class="nav-section-title">Reports & Audit</div>
+                        <a asp-controller="Report" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Report" ? "active" : "")">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            <span>Financial Reports</span>
+                        </a>
+                        @if (User.IsInRole(Roles.Admin))
+                        {
+                            <a asp-controller="AuditLog" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AuditLog" ? "active" : "")">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Audit Logs</span>
+                            </a>
+                        }
+                    }
+                    else if (User.IsInRole(Roles.Customer))
+                    {
+                        <div class="nav-section-title">My Banking</div>
+                        <a asp-controller="BankAccounts" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "BankAccounts" ? "active" : "")">
+                            <i class="fa-solid fa-wallet"></i>
+                            <span>My Accounts</span>
+                        </a>
+                        <a asp-controller="Transfer" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transfer" ? "active" : "")">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Transfer Funds</span>
+                        </a>
+                        <a asp-controller="Beneficiary" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Beneficiary" ? "active" : "")">
+                            <i class="fa-solid fa-address-book"></i>
+                            <span>Beneficiaries</span>
+                        </a>
+                        <a asp-controller="Transaction" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transaction" ? "active" : "")">
+                            <i class="fa-solid fa-list-check"></i>
+                            <span>Account Statement</span>
+                        </a>
+
+                        <div class="nav-section-title">Loans & Cards</div>
+                        <a asp-controller="Loan" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Loan" ? "active" : "")">
+                            <i class="fa-solid fa-landmark"></i>
+                            <span>My Loans</span>
+                        </a>
+                        <a asp-controller="Card" asp-action="Index" class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Card" ? "active" : "")">
+                            <i class="fa-solid fa-credit-card"></i>
+                            <span>My Debit Cards</span>
+                        </a>
+                    }
+                </div>
+
+                <div class="sidebar-footer">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="small text-white font-weight-bold">@(fullName.Length > 16 ? fullName.Substring(0, 14) + "..." : fullName)</div>
+                            <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">@role</span>
+                        </div>
+                        <form asp-controller="Account" asp-action="Logout" method="post" id="logoutFormSidebar">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Sign Out">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Container -->
+            <div class="app-main">
+                <!-- Topbar -->
+                <header class="app-topbar no-print">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-secondary small fw-medium">
+                            <i class="fa-regular fa-calendar-days me-1"></i>
+                            @DateTime.UtcNow.ToString("dddd, MMMM dd, yyyy")
+                        </span>
+                        <span class="badge bg-light text-dark border">
+                            <i class="fa-solid fa-shield text-success me-1"></i> System Online (TLS 1.3)
+                        </span>
+                    </div>
+
+                    <div class="topbar-actions">
+                        <!-- Notifications Dropdown -->
+                        <div class="dropdown">
+                            <div class="notification-bell" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" id="notificationDropdown">
+                                <i class="fa-regular fa-bell"></i>
+                                <span class="notification-badge" id="unreadBadge" style="display:none;">0</span>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg p-2" style="width: 320px;" aria-labelledby="notificationDropdown">
+                                <li class="d-flex justify-content-between align-items-center px-2 py-1 border-bottom">
+                                    <span class="fw-bold small">Alerts & Notifications</span>
+                                    <a asp-controller="Notification" asp-action="Index" class="small text-primary">View All</a>
+                                </li>
+                                <li class="px-2 py-3 text-center text-muted small" id="notificationPreviewList">
+                                    No new unread alerts.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <div class="user-profile-menu dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar">
+                                    @initials
+                                </div>
+                                <div class="d-none d-md-block text-start">
+                                    <div class="fw-bold small text-dark leading-none">@fullName</div>
+                                    <div class="text-secondary" style="font-size: 0.72rem;">@userEmail</div>
+                                </div>
+                            </div>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg p-2" style="min-width: 220px;">
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="fw-bold">@fullName</div>
+                                    <div class="small text-muted">@role</div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="Account" asp-action="ChangePassword">
+                                        <i class="fa-solid fa-key me-2 text-secondary"></i> Change Password
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" asp-controller="Notification" asp-action="Index">
+                                        <i class="fa-solid fa-bell me-2 text-secondary"></i> Notifications
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-danger py-2">
+                                            <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Page Content -->
+                <main class="page-content">
+                    <!-- Flash Messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert">
+                            <i class="fa-solid fa-circle-check fs-5 me-2 text-success"></i>
+                            <div>@TempData["SuccessMessage"]</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert">
+                            <i class="fa-solid fa-triangle-exclamation fs-5 me-2 text-danger"></i>
+                            <div>@TempData["ErrorMessage"]</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Public Layout (Landing / Auth Pages) -->
+        <header class="no-print">
+            <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--sidebar-bg); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div class="container">
+                    <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
+                        <div class="brand-icon" style="width: 34px; height: 34px; font-size: 1rem;">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <span class="fw-bold tracking-tight">SecureBank Enterprise</span>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="publicNav">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex align-items-center gap-2">
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-sm px-3">
+                                <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-sm px-3">
+                                <i class="fa-solid fa-user-plus me-1"></i> Register Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="flex-grow-1">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="container mt-3">
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert">
+                        <i class="fa-solid fa-circle-check fs-5 me-2 text-success"></i>
+                        <div>@TempData["SuccessMessage"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="container mt-3">
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 d-flex align-items-center" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation fs-5 me-2 text-danger"></i>
+                        <div>@TempData["ErrorMessage"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+
+        <footer class="py-4 bg-dark text-white-50 border-top border-secondary text-center small no-print">
+            <div class="container">
+                <p class="mb-1">&copy; 2026 SecureBank Management System. Built with ASP.NET Core 8 MVC, EF Core & SQL Server.</p>
+                <p class="mb-0 text-muted" style="font-size: 0.75rem;">Enterprise Grade Layered Architecture &middot; Atomic Financial Transactions &middot; Role-Based Authorization</p>
+            </div>
+        </footer>
+    }
+
+    <!-- Standard Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js 4.x CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
