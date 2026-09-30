@@ -1,0 +1,175 @@
+@model BankingManagementSystem.Core.DTOs.CustomerDashboardDto
+@{
+    ViewData["Title"] = "Customer Banking Portal";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Welcome back, @Model.CustomerName!</h1>
+        <div class="page-subtitle">Customer Identifier: <span class="font-mono fw-bold text-primary">@Model.CustomerCode</span> &bull; Secure Digital Account</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Transfer" asp-action="Index" class="btn btn-primary btn-sm px-3 shadow-sm">
+            <i class="fa-solid fa-paper-plane me-1"></i> Send Money
+        </a>
+        <a asp-controller="Loan" asp-action="Apply" class="btn btn-outline-primary btn-sm px-3">
+            <i class="fa-solid fa-hand-holding-dollar me-1"></i> Request Loan
+        </a>
+    </div>
+</div>
+
+<!-- Primary Portfolio Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #1e3a8a, #0f172a); color: #fff;">
+            <div class="stat-card-header text-white-50">
+                <span class="stat-card-title text-light opacity-75">Net Available Liquidity</span>
+                <i class="fa-solid fa-wallet fs-3 text-warning"></i>
+            </div>
+            <div class="stat-card-value text-white">@Model.TotalBalance.ToString("C2")</div>
+            <div class="stat-card-footer text-light opacity-75">
+                <span>Across @Model.ActiveAccountsCount active account(s)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Active Debit Cards</span>
+                <div class="stat-card-icon icon-blue">
+                    <i class="fa-solid fa-credit-card"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.ActiveCardsCount</div>
+            <div class="stat-card-footer">
+                <a asp-controller="Card" asp-action="Index" class="small text-primary fw-semibold">Manage Cards &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Active Loan Facilities</span>
+                <div class="stat-card-icon icon-amber">
+                    <i class="fa-solid fa-landmark"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.ActiveLoansCount</div>
+            <div class="stat-card-footer">
+                <a asp-controller="Loan" asp-action="Index" class="small text-primary fw-semibold">View Repayments &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts List -->
+<div class="bank-card mb-4">
+    <div class="bank-card-header">
+        <h5 class="bank-card-title">
+            <i class="fa-solid fa-vault text-primary me-2"></i> My Deposit & Transaction Accounts
+        </h5>
+    </div>
+    <div class="p-3">
+        <div class="row g-3">
+            @if (!Model.Accounts.Any())
+            {
+                <div class="col-12 text-center py-4 text-muted">
+                    No active bank accounts found.
+                </div>
+            }
+            else
+            {
+                @foreach (var acc in Model.Accounts)
+                {
+                    <div class="col-md-6">
+                        <div class="p-3 rounded border bg-light h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary">@acc.AccountTypeName</span>
+                                    <span class="badge-status badge-active">@acc.Status</span>
+                                </div>
+                                <div class="font-mono fw-bold fs-5 text-dark mb-1">@acc.AccountNumber</div>
+                                <div class="small text-muted mb-2">Branch: @acc.BranchName</div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-end mt-3 pt-2 border-top">
+                                <div>
+                                    <div class="small text-muted">Current Balance</div>
+                                    <div class="fw-bold fs-4 text-primary">@acc.Balance.ToString("C2")</div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="BankAccounts" asp-action="Statement" asp-route-id="@acc.AccountId" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fa-solid fa-file-lines me-1"></i> Statement
+                                    </a>
+                                    <a asp-controller="BankAccounts" asp-action="Details" asp-route-id="@acc.AccountId" class="btn btn-sm btn-primary">
+                                        Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="bank-card">
+    <div class="bank-card-header">
+        <h5 class="bank-card-title">
+            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Recent Account Activity
+        </h5>
+        <a asp-controller="Transaction" asp-action="Index" class="btn btn-sm btn-outline-primary">Full History &rarr;</a>
+    </div>
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Account</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                    <th>Date</th>
+                    <th>Receipt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.RecentTransactions.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No recent transactions recorded.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var txn in Model.RecentTransactions)
+                    {
+                        var isCredit = txn.TransactionType == "DEPOSIT" || txn.TransactionType == "TRANSFER_IN";
+                        <tr>
+                            <td class="font-mono fw-semibold small text-primary">@txn.Reference</td>
+                            <td class="font-mono small">@txn.AccountNumber</td>
+                            <td>
+                                <span class="badge @(isCredit ? "bg-success" : "bg-danger") bg-opacity-10 text-@(isCredit ? "success" : "danger") border border-@(isCredit ? "success" : "danger") border-opacity-25">
+                                    @txn.TransactionType
+                                </span>
+                            </td>
+                            <td class="fw-bold @(isCredit ? "text-success" : "text-danger")">
+                                @(isCredit ? "+" : "-")@txn.Amount.ToString("C2")
+                            </td>
+                            <td class="font-mono small text-secondary">@txn.BalanceAfter.ToString("C2")</td>
+                            <td class="text-secondary small">@txn.Date.ToString("MMM dd, yyyy HH:mm")</td>
+                            <td>
+                                <a asp-controller="Transaction" asp-action="Receipt" asp-route-reference="@txn.Reference" class="btn btn-sm btn-light border py-0 px-2" title="View Receipt">
+                                    <i class="fa-solid fa-receipt text-secondary"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,304 @@
+@model BankingManagementSystem.Core.DTOs.AdminDashboardDto
+@{
+    ViewData["Title"] = "Executive Operations Dashboard";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Executive Banking Dashboard</h1>
+        <div class="page-subtitle">Real-time system liquidity, operational throughput, and portfolio analytics</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Transaction" asp-action="Deposit" class="btn btn-outline-success btn-sm px-3">
+            <i class="fa-solid fa-plus me-1"></i> Cash Deposit
+        </a>
+        <a asp-controller="Transfer" asp-action="Index" class="btn btn-primary btn-sm px-3 shadow-sm">
+            <i class="fa-solid fa-paper-plane me-1"></i> Quick Transfer
+        </a>
+    </div>
+</div>
+
+<!-- Primary Financial Metric Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Customers</span>
+                <div class="stat-card-icon icon-blue">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.TotalCustomers.ToString("N0")</div>
+            <div class="stat-card-footer">
+                <span class="text-success"><i class="fa-solid fa-arrow-trend-up"></i> Active Portfolio</span>
+                <span class="ms-auto text-muted small">KYC Verified</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Bank Accounts</span>
+                <div class="stat-card-icon icon-emerald">
+                    <i class="fa-solid fa-vault"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.TotalAccounts.ToString("N0")</div>
+            <div class="stat-card-footer">
+                <span class="text-success fw-semibold">@Model.ActiveAccounts Active</span>
+                <span class="ms-auto text-muted small">Savings &bull; Current &bull; Payroll</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Deposits</span>
+                <div class="stat-card-icon icon-emerald">
+                    <i class="fa-solid fa-circle-arrow-down"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.TotalDepositVolume.ToString("C0")</div>
+            <div class="stat-card-footer">
+                <span class="text-muted small">Gross Liquidity Inflow</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Withdrawals</span>
+                <div class="stat-card-icon icon-rose">
+                    <i class="fa-solid fa-circle-arrow-up"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.TotalWithdrawalVolume.ToString("C0")</div>
+            <div class="stat-card-footer">
+                <span class="text-muted small">Gross Cash Outflow</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Metric Cards (Transfers & Loans) -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Total Fund Transfers</span>
+                <div class="stat-card-icon icon-purple">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.TotalTransferVolume.ToString("C0")</div>
+            <div class="stat-card-footer">
+                <span class="text-muted small">Inter-account settlements</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Disbursed Loans</span>
+                <div class="stat-card-icon icon-amber">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.TotalLoanDisbursed.ToString("C0")</div>
+            <div class="stat-card-footer">
+                <span class="text-muted small">Across @Model.TotalLoans total credit facilities</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Pending Loan Requests</span>
+                <div class="stat-card-icon icon-rose">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+            </div>
+            <div class="stat-card-value text-danger">@Model.PendingLoans</div>
+            <div class="stat-card-footer">
+                <a asp-controller="Loan" asp-action="Index" asp-route-statusFilter="Pending" class="small fw-semibold text-primary">Review Applications &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Chart Section -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="bank-card h-100">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-chart-line text-primary me-2"></i> Monthly Cash Flow Trends (Past 6 Months)
+                </h5>
+                <span class="badge bg-light text-secondary border">Real Database Aggregate</span>
+            </div>
+            <div class="bank-card-body">
+                <div style="height: 320px;">
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="bank-card h-100">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-chart-pie text-primary me-2"></i> Account Distribution
+                </h5>
+            </div>
+            <div class="bank-card-body d-flex flex-column align-items-center justify-content-center">
+                <div style="height: 250px; width: 100%;">
+                    <canvas id="accountTypeChart"></canvas>
+                </div>
+                <div class="text-muted small mt-2">Active portfolios by tier</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Feed -->
+<div class="bank-card">
+    <div class="bank-card-header">
+        <h5 class="bank-card-title">
+            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Recent Transaction Ledger
+        </h5>
+        <a asp-controller="Transaction" asp-action="Index" class="btn btn-sm btn-outline-primary">View All &rarr;</a>
+    </div>
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Account</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.RecentTransactions.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No transactions recorded yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var txn in Model.RecentTransactions)
+                    {
+                        var isCredit = txn.TransactionType == "DEPOSIT" || txn.TransactionType == "TRANSFER_IN";
+                        <tr>
+                            <td class="font-mono fw-semibold small text-primary">@txn.Reference</td>
+                            <td class="font-mono small">@txn.AccountNumber</td>
+                            <td>
+                                <span class="badge @(isCredit ? "bg-success" : "bg-danger") bg-opacity-10 text-@(isCredit ? "success" : "danger") border border-@(isCredit ? "success" : "danger") border-opacity-25">
+                                    @txn.TransactionType
+                                </span>
+                            </td>
+                            <td class="fw-bold @(isCredit ? "text-success" : "text-danger")">
+                                @(isCredit ? "+" : "-")@txn.Amount.ToString("C2")
+                            </td>
+                            <td class="font-mono small text-secondary">@txn.BalanceAfter.ToString("C2")</td>
+                            <td class="text-secondary small">@txn.Date.ToString("MMM dd, yyyy HH:mm")</td>
+                            <td>
+                                <span class="badge-status badge-active">
+                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> @txn.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-controller="Transaction" asp-action="Receipt" asp-route-reference="@txn.Reference" class="btn btn-sm btn-light border py-0 px-2" title="Print Receipt">
+                                    <i class="fa-solid fa-receipt text-secondary"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Chart 1: Cash Flow Line/Bar
+            var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyLabels));
+            var deposits = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyDeposits));
+            var withdrawals = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyWithdrawals));
+
+            var ctxFlow = document.getElementById('cashFlowChart').getContext('2d');
+            new Chart(ctxFlow, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Deposits ($)',
+                            data: deposits,
+                            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Withdrawals ($)',
+                            data: withdrawals,
+                            backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (val) { return '$' + val.toLocaleString(); }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Account Types Donut
+            var accKeys = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountTypeDistribution.Keys));
+            var accVals = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountTypeDistribution.Values));
+
+            var ctxAcc = document.getElementById('accountTypeChart').getContext('2d');
+            new Chart(ctxAcc, {
+                type: 'doughnut',
+                data: {
+                    labels: accKeys,
+                    datasets: [{
+                        data: accVals,
+                        backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        });
+    </script>
+}
