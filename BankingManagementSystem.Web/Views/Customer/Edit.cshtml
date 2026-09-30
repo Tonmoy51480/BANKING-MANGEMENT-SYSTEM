@@ -1,0 +1,95 @@
+@model BankingManagementSystem.Web.ViewModels.CustomerEditViewModel
+@{
+    ViewData["Title"] = "Edit Customer";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="bank-card">
+            <div class="bank-card-header">
+                <div>
+                    <h5 class="bank-card-title">
+                        <i class="fa-solid fa-user-pen text-primary me-2"></i> Edit Customer Information
+                    </h5>
+                    <div class="small text-muted font-mono">@Model.CustomerCode</div>
+                </div>
+                <a asp-action="Details" asp-route-id="@Model.CustomerId" class="btn btn-sm btn-outline-secondary">Cancel</a>
+            </div>
+
+            <div class="bank-card-body">
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="CustomerId" />
+                    <input type="hidden" asp-for="CustomerCode" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Gender" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<Gender>()"></select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NID" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="NID" class="form-control" />
+                            <span asp-validation-for="NID" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="DateOfBirth" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="DateOfBirth" class="form-control" type="date" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Occupation" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="Occupation" class="form-control" />
+                            <span asp-validation-for="Occupation" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ProfileImage" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="ProfileImage" class="form-control" placeholder="Image URL (optional)" />
+                            <span asp-validation-for="ProfileImage" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label small fw-bold text-secondary"></label>
+                            <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

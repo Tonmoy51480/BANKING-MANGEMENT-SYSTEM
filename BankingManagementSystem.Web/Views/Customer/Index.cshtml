@@ -1,0 +1,127 @@
+@model BankingManagementSystem.Web.ViewModels.CustomerListViewModel
+@{
+    ViewData["Title"] = "Customer Management";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Customer Management</h1>
+        <div class="page-subtitle">Onboard, manage KYC documentation, and review customer portfolios</div>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn btn-primary px-3 shadow-sm">
+            <i class="fa-solid fa-user-plus me-1"></i> New Customer
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="bank-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control border-start-0" placeholder="Search by name, code, email, NID, phone..." />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="statusFilter" class="form-select">
+                <option value="">-- All Statuses --</option>
+                <option value="Active" selected="@(Model.StatusFilter == CustomerStatus.Active)">Active</option>
+                <option value="Inactive" selected="@(Model.StatusFilter == CustomerStatus.Inactive)">Inactive</option>
+                <option value="Suspended" selected="@(Model.StatusFilter == CustomerStatus.Suspended)">Suspended</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-3">Filter</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+            <span class="ms-auto align-self-center text-muted small">@Model.TotalItems Record(s)</span>
+        </div>
+    </form>
+</div>
+
+<!-- Customer Table -->
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Customer Code</th>
+                    <th>Full Name</th>
+                    <th>Contact Info</th>
+                    <th>NID / Passport</th>
+                    <th>Accounts</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Customers.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-users-slash fs-3 d-block mb-2"></i>
+                            No matching customer records found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var cust in Model.Customers)
+                    {
+                        var statusClass = cust.Status == CustomerStatus.Active ? "badge-active" : "badge-danger";
+                        <tr>
+                            <td class="font-mono fw-bold text-primary">@cust.CustomerCode</td>
+                            <td>
+                                <div class="fw-semibold text-dark">@cust.FullName</div>
+                                <div class="small text-muted">@cust.Occupation</div>
+                            </td>
+                            <td>
+                                <div class="small"><i class="fa-solid fa-envelope text-muted me-1"></i> @cust.Email</div>
+                                <div class="small"><i class="fa-solid fa-phone text-muted me-1"></i> @cust.Phone</div>
+                            </td>
+                            <td class="font-mono small">@cust.NID</td>
+                            <td>
+                                <span class="badge bg-primary rounded-pill">@cust.Accounts.Count Account(s)</span>
+                            </td>
+                            <td>
+                                <span class="badge-status @statusClass">
+                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> @cust.Status
+                                </span>
+                            </td>
+                            <td class="small text-muted">@cust.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@cust.CustomerId" class="btn btn-sm btn-outline-primary" title="View Profile">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@cust.CustomerId" class="btn btn-sm btn-outline-secondary" title="Edit Customer">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <a asp-controller="BankAccounts" asp-action="Create" asp-route-customerId="@cust.CustomerId" class="btn btn-sm btn-outline-success" title="Open Bank Account">
+                                    <i class="fa-solid fa-plus"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="p-3 d-flex justify-content-between align-items-center border-top">
+            <span class="small text-muted">Page @Model.PageNumber of @Model.TotalPages</span>
+            <ul class="pagination pagination-sm mb-0">
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-searchTerm="@Model.SearchTerm" asp-route-statusFilter="@Model.StatusFilter">@p</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>

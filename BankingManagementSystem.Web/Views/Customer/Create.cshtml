@@ -1,0 +1,90 @@
+@model BankingManagementSystem.Web.ViewModels.CustomerCreateViewModel
+@{
+    ViewData["Title"] = "Onboard New Customer";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="bank-card">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-user-plus text-primary me-2"></i> Onboard New Customer (KYC Registration)
+                </h5>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to List</a>
+            </div>
+
+            <div class="bank-card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="FullName" class="form-control" placeholder="Full legal name" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Gender" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<Gender>()"></select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="Email" class="form-control" placeholder="email@domain.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Phone" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="Phone" class="form-control" placeholder="+1 (555) 000-0000" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="NID" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="NID" class="form-control" placeholder="National ID or Passport number" />
+                            <span asp-validation-for="NID" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="DateOfBirth" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="DateOfBirth" class="form-control" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Occupation" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="Occupation" class="form-control" placeholder="e.g. Software Engineer, Doctor, Merchant" />
+                            <span asp-validation-for="Occupation" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="InitialPassword" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="InitialPassword" class="form-control" placeholder="Optional portal password (min 6 chars)" />
+                            <span asp-validation-for="InitialPassword" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label small fw-bold text-secondary"></label>
+                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Full residential address, street, city, state"></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Register Customer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

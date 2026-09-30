@@ -1,0 +1,199 @@
+@model BankingManagementSystem.Web.ViewModels.CustomerDetailsViewModel
+@{
+    ViewData["Title"] = $"Customer - {Model.Customer.FullName}";
+}
+
+<div class="page-header">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="page-title">@Model.Customer.FullName</h1>
+            <span class="badge bg-primary font-mono">@Model.Customer.CustomerCode</span>
+            <span class="badge-status @(Model.Customer.Status == CustomerStatus.Active ? "badge-active" : "badge-danger")">
+                @Model.Customer.Status
+            </span>
+        </div>
+        <div class="page-subtitle">Registered on @Model.Customer.CreatedAt.ToString("MMMM dd, yyyy")</div>
+    </div>
+    <div class="d-flex gap-2">
+        @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Customer.CustomerId" class="btn btn-outline-secondary btn-sm">
+                <i class="fa-solid fa-pen me-1"></i> Edit Details
+            </a>
+            <a asp-controller="BankAccounts" asp-action="Create" asp-route-customerId="@Model.Customer.CustomerId" class="btn btn-primary btn-sm shadow-sm">
+                <i class="fa-solid fa-vault me-1"></i> Open Account
+            </a>
+            <a asp-controller="Loan" asp-action="Apply" asp-route-customerId="@Model.Customer.CustomerId" class="btn btn-outline-primary btn-sm">
+                <i class="fa-solid fa-hand-holding-dollar me-1"></i> Apply Loan
+            </a>
+        }
+        @if (User.IsInRole(Roles.Admin))
+        {
+            <form asp-action="ToggleStatus" asp-route-id="@Model.Customer.CustomerId" method="post" class="d-inline" onsubmit="return confirm('Change customer status?');">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="activate" value="@(Model.Customer.Status != CustomerStatus.Active ? "true" : "false")" />
+                <button type="submit" class="btn btn-sm @(Model.Customer.Status == CustomerStatus.Active ? "btn-outline-danger" : "btn-outline-success")">
+                    <i class="fa-solid fa-power-off me-1"></i> @(Model.Customer.Status == CustomerStatus.Active ? "Deactivate" : "Activate")
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<!-- Customer Profile Summary Info Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="bank-card h-100">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title"><i class="fa-solid fa-id-card text-primary me-2"></i> Identity Details</h5>
+            </div>
+            <div class="bank-card-body">
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">National ID / Passport:</span>
+                        <span class="font-mono fw-bold">@Model.Customer.NID</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Date of Birth:</span>
+                        <span>@Model.Customer.DateOfBirth.ToString("MMM dd, yyyy")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Gender:</span>
+                        <span>@Model.Customer.Gender</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Occupation:</span>
+                        <span class="fw-semibold">@(Model.Customer.Occupation ?? "Not specified")</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Email Address:</span>
+                        <span class="text-primary">@Model.Customer.Email</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Phone Number:</span>
+                        <span>@Model.Customer.Phone</span>
+                    </li>
+                    <li class="list-group-item px-0">
+                        <span class="text-muted d-block mb-1">Residential Address:</span>
+                        <span class="fw-medium">@Model.Customer.Address</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Linked Bank Accounts -->
+        <div class="bank-card mb-4">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-vault text-primary me-2"></i> Accounts Portfolio (@Model.Accounts.Count())
+                </h5>
+                @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+                {
+                    <a asp-controller="BankAccounts" asp-action="Create" asp-route-customerId="@Model.Customer.CustomerId" class="btn btn-sm btn-outline-primary">
+                        <i class="fa-solid fa-plus me-1"></i> Add Account
+                    </a>
+                }
+            </div>
+            <div class="bank-table-responsive">
+                <table class="bank-table">
+                    <thead>
+                        <tr>
+                            <th>Account Number</th>
+                            <th>Type</th>
+                            <th>Branch</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Accounts.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">No bank accounts opened for this customer.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var acc in Model.Accounts)
+                            {
+                                <tr>
+                                    <td class="font-mono fw-bold text-primary">@acc.AccountNumber</td>
+                                    <td><span class="badge bg-light text-dark border">@acc.AccountType.Name</span></td>
+                                    <td class="small text-muted">@acc.Branch.BranchName</td>
+                                    <td class="fw-bold text-success fs-6">@acc.Balance.ToString("C2")</td>
+                                    <td><span class="badge-status badge-active">@acc.Status</span></td>
+                                    <td>
+                                        <a asp-controller="BankAccounts" asp-action="Details" asp-route-id="@acc.AccountId" class="btn btn-sm btn-light border py-0 px-2" title="Details">
+                                            <i class="fa-solid fa-arrow-right text-primary"></i>
+                                        </a>
+                                        <a asp-controller="BankAccounts" asp-action="Statement" asp-route-id="@acc.AccountId" class="btn btn-sm btn-light border py-0 px-2" title="Statement">
+                                            <i class="fa-solid fa-file-lines text-secondary"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Loans Portfolio -->
+        <div class="bank-card">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-landmark text-primary me-2"></i> Credit Facilities & Loans (@Model.Loans.Count())
+                </h5>
+            </div>
+            <div class="bank-table-responsive">
+                <table class="bank-table">
+                    <thead>
+                        <tr>
+                            <th>Loan #</th>
+                            <th>Type</th>
+                            <th>Principal</th>
+                            <th>Monthly EMI</th>
+                            <th>Remaining</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Loans.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">No loans registered for this customer.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var loan in Model.Loans)
+                            {
+                                <tr>
+                                    <td class="font-mono fw-bold text-primary">@loan.LoanNumber</td>
+                                    <td>@loan.LoanType</td>
+                                    <td class="fw-semibold">@loan.PrincipalAmount.ToString("C2")</td>
+                                    <td class="text-primary font-mono">@loan.MonthlyPayment.ToString("C2")</td>
+                                    <td class="fw-bold text-danger">@loan.RemainingBalance.ToString("C2")</td>
+                                    <td>
+                                        <span class="badge @(loan.Status == LoanStatus.Active ? "bg-success" : loan.Status == LoanStatus.Pending ? "bg-warning text-dark" : "bg-secondary")">
+                                            @loan.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Loan" asp-action="Details" asp-route-id="@loan.LoanId" class="btn btn-sm btn-light border py-0 px-2">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
