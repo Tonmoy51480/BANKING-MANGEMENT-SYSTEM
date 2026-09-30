@@ -1,0 +1,87 @@
+@model BankingManagementSystem.Web.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Open Digital Bank Account";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="bank-card shadow-lg border-0">
+                <div class="bank-card-header bg-light">
+                    <h5 class="bank-card-title">
+                        <i class="fa-solid fa-user-plus text-primary me-2"></i> Register for Digital Banking
+                    </h5>
+                    <span class="badge bg-primary">New Customer</span>
+                </div>
+
+                <div class="bank-card-body">
+                    <form asp-action="Register" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label asp-for="FullName" class="form-label small fw-bold text-secondary"></label>
+                                <input asp-for="FullName" class="form-control" placeholder="e.g. Jonathan Reynolds" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label small fw-bold text-secondary"></label>
+                                <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label small fw-bold text-secondary"></label>
+                                <input asp-for="Phone" class="form-control" placeholder="+1 (555) 000-0000" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="NID" class="form-label small fw-bold text-secondary"></label>
+                                <input asp-for="NID" class="form-control" placeholder="National ID or Passport #" />
+                                <span asp-validation-for="NID" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="DateOfBirth" class="form-label small fw-bold text-secondary"></label>
+                                <input asp-for="DateOfBirth" class="form-control" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Address" class="form-label small fw-bold text-secondary"></label>
+                                <textarea asp-for="Address" class="form-control" rows="2" placeholder="Residential street address, city, state"></textarea>
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Password" class="form-label small fw-bold text-secondary"></label>
+                                <input asp-for="Password" type="password" class="form-control" placeholder="Minimum 6 characters" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmPassword" class="form-label small fw-bold text-secondary"></label>
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Repeat password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                            <a asp-action="Login" class="text-secondary small">Already have an account? Sign In</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                                <i class="fa-solid fa-check me-2"></i> Complete Registration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
