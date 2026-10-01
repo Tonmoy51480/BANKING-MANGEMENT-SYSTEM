@@ -1,0 +1,72 @@
+@model BankingManagementSystem.Web.ViewModels.AccountCreateViewModel
+@{
+    ViewData["Title"] = "Open New Bank Account";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="bank-card">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-vault text-primary me-2"></i> Open New Customer Bank Account
+                </h5>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to Accounts</a>
+            </div>
+
+            <div class="bank-card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="CustomerId" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="CustomerId" class="form-select" asp-items="Model.Customers">
+                                <option value="">-- Select Active Customer --</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="AccountTypeId" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="AccountTypeId" class="form-select" asp-items="Model.AccountTypes">
+                                <option value="">-- Select Account Type --</option>
+                            </select>
+                            <span asp-validation-for="AccountTypeId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="BranchId" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="BranchId" class="form-select" asp-items="Model.Branches">
+                                <option value="">-- Select Managing Branch --</option>
+                            </select>
+                            <span asp-validation-for="BranchId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="InitialDeposit" class="form-label small fw-bold text-secondary"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="InitialDeposit" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="InitialDeposit" class="text-danger small"></span>
+                            <div class="form-text small text-muted">
+                                Deposit amount must equal or exceed the chosen account type's minimum balance (e.g. $100 for Savings, $500 for Current).
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-check me-2"></i> Open Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

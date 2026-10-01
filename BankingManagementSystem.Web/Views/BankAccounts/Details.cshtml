@@ -1,0 +1,170 @@
+@model BankingManagementSystem.Web.ViewModels.AccountDetailsViewModel
+@{
+    ViewData["Title"] = $"Account - {Model.Account.AccountNumber}";
+}
+
+<div class="page-header">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="page-title font-mono">@Model.Account.AccountNumber</h1>
+            <span class="badge bg-primary">@Model.Account.AccountType.Name</span>
+            <span class="badge-status @(Model.Account.Status == AccountStatus.Active ? "badge-active" : "badge-pending")">
+                @Model.Account.Status
+            </span>
+        </div>
+        <div class="page-subtitle">
+            Holder: <a asp-controller="Customer" asp-action="Details" asp-route-id="@Model.Account.CustomerId" class="fw-bold text-dark">@Model.Account.Customer.FullName</a>
+            &bull; Branch: @Model.Account.Branch.BranchName
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Statement" asp-route-id="@Model.Account.AccountId" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-file-lines me-1"></i> Account Statement
+        </a>
+        @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+        {
+            <a asp-controller="Transaction" asp-action="Deposit" asp-route-accountId="@Model.Account.AccountId" class="btn btn-outline-success btn-sm">
+                <i class="fa-solid fa-plus me-1"></i> Deposit
+            </a>
+            <a asp-controller="Transaction" asp-action="Withdraw" asp-route-accountId="@Model.Account.AccountId" class="btn btn-outline-danger btn-sm">
+                <i class="fa-solid fa-minus me-1"></i> Withdraw
+            </a>
+        }
+        <a asp-controller="Transfer" asp-action="Index" class="btn btn-primary btn-sm shadow-sm">
+            <i class="fa-solid fa-paper-plane me-1"></i> Transfer
+        </a>
+    </div>
+</div>
+
+<!-- Account Balance & Parameter Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #1e3a8a, #0f172a); color: #fff;">
+            <div class="stat-card-header text-white-50">
+                <span class="stat-card-title text-light opacity-75">Available Balance</span>
+                <i class="fa-solid fa-wallet fs-4 text-warning"></i>
+            </div>
+            <div class="stat-card-value text-white">@Model.Account.Balance.ToString("C2")</div>
+            <div class="stat-card-footer text-light opacity-75">
+                <span>Minimum Required: @Model.Account.MinimumBalance.ToString("C2")</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Daily Withdrawal Limit</span>
+                <div class="stat-card-icon icon-emerald">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.Account.AccountType.DailyWithdrawalLimit.ToString("C2")</div>
+            <div class="stat-card-footer">
+                <span class="text-muted small">Max cash per calendar day</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <span class="stat-card-title">Interest Rate</span>
+                <div class="stat-card-icon icon-purple">
+                    <i class="fa-solid fa-percent"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@Model.Account.AccountType.InterestRate%</div>
+            <div class="stat-card-footer">
+                <span class="text-muted small">Annual percentage yield</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Lifecycle & Admin Control (if admin/employee) -->
+@if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+{
+    <div class="bank-card p-3 mb-4 bg-light border">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <span class="fw-bold small text-dark"><i class="fa-solid fa-sliders me-1"></i> Account Governance:</span>
+                <span class="text-muted small ms-2">Change account operational state if required for compliance or risk management.</span>
+            </div>
+            <form asp-action="ChangeStatus" asp-route-id="@Model.Account.AccountId" method="post" class="d-flex gap-2">
+                @Html.AntiForgeryToken()
+                <select name="status" class="form-select form-select-sm" style="width: 140px;">
+                    <option value="Active" selected="@(Model.Account.Status == AccountStatus.Active)">Active</option>
+                    <option value="Frozen" selected="@(Model.Account.Status == AccountStatus.Frozen)">Frozen</option>
+                    <option value="Inactive" selected="@(Model.Account.Status == AccountStatus.Inactive)">Inactive</option>
+                    <option value="Closed" selected="@(Model.Account.Status == AccountStatus.Closed)">Closed</option>
+                </select>
+                <input type="text" name="reason" class="form-control form-control-sm" placeholder="Reason (optional)" style="width: 200px;" />
+                <button type="submit" class="btn btn-sm btn-outline-dark" onclick="return confirm('Update account status?');">Apply</button>
+            </form>
+        </div>
+    </div>
+}
+
+<!-- Recent Account Transactions -->
+<div class="bank-card">
+    <div class="bank-card-header">
+        <h5 class="bank-card-title">
+            <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i> Recent Account Transactions
+        </h5>
+        <a asp-action="Statement" asp-route-id="@Model.Account.AccountId" class="btn btn-sm btn-outline-primary">
+            Full Statement &rarr;
+        </a>
+    </div>
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Receipt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.RecentTransactions.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No transactions on this account yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var txn in Model.RecentTransactions)
+                    {
+                        var isCredit = txn.TransactionType == TransactionType.DEPOSIT || txn.TransactionType == TransactionType.TRANSFER_IN;
+                        <tr>
+                            <td class="font-mono fw-bold small text-primary">@txn.TransactionReference</td>
+                            <td>
+                                <span class="badge @(isCredit ? "bg-success" : "bg-danger") bg-opacity-10 text-@(isCredit ? "success" : "danger") border border-@(isCredit ? "success" : "danger") border-opacity-25">
+                                    @txn.TransactionType
+                                </span>
+                            </td>
+                            <td class="fw-bold @(isCredit ? "text-success" : "text-danger")">
+                                @(isCredit ? "+" : "-")@txn.Amount.ToString("C2")
+                            </td>
+                            <td class="font-mono small text-secondary">@txn.BalanceAfterTransaction.ToString("C2")</td>
+                            <td class="small">@txn.Description</td>
+                            <td class="small text-muted">@txn.TransactionDate.ToString("MMM dd, yyyy HH:mm")</td>
+                            <td><span class="badge-status badge-active">@txn.Status</span></td>
+                            <td>
+                                <a asp-controller="Transaction" asp-action="Receipt" asp-route-reference="@txn.TransactionReference" class="btn btn-sm btn-light border py-0 px-2" title="Receipt">
+                                    <i class="fa-solid fa-receipt text-secondary"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

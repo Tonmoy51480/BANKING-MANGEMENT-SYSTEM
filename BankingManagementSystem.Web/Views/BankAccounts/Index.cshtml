@@ -1,0 +1,134 @@
+@model BankingManagementSystem.Web.ViewModels.AccountListViewModel
+@{
+    ViewData["Title"] = "Bank Accounts Portfolio";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Bank Accounts Portfolio</h1>
+        <div class="page-subtitle">Manage customer deposit accounts, liquidity balances, and operational states</div>
+    </div>
+    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+    {
+        <div>
+            <a asp-action="Create" class="btn btn-primary px-3 shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Open New Account
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="bank-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control border-start-0" placeholder="Search account number, customer name, code..." />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="accountTypeId" class="form-select" asp-items="Model.AccountTypes">
+                <option value="">-- All Account Types --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="statusFilter" class="form-select">
+                <option value="">-- All Statuses --</option>
+                <option value="Active" selected="@(Model.StatusFilter == AccountStatus.Active)">Active</option>
+                <option value="Inactive" selected="@(Model.StatusFilter == AccountStatus.Inactive)">Inactive</option>
+                <option value="Frozen" selected="@(Model.StatusFilter == AccountStatus.Frozen)">Frozen</option>
+                <option value="Closed" selected="@(Model.StatusFilter == AccountStatus.Closed)">Closed</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Accounts Table -->
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Account Number</th>
+                    <th>Customer Name</th>
+                    <th>Account Type</th>
+                    <th>Branch</th>
+                    <th>Available Balance</th>
+                    <th>Status</th>
+                    <th>Opened</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Accounts.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-vault fs-3 d-block mb-2"></i>
+                            No accounts found matching criteria.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var acc in Model.Accounts)
+                    {
+                        var statusBadge = acc.Status == AccountStatus.Active ? "badge-active" : acc.Status == AccountStatus.Frozen ? "badge-pending" : "badge-danger";
+                        <tr>
+                            <td class="font-mono fw-bold text-primary">@acc.AccountNumber</td>
+                            <td>
+                                <a asp-controller="Customer" asp-action="Details" asp-route-id="@acc.CustomerId" class="fw-semibold text-dark text-decoration-none">
+                                    @acc.Customer.FullName
+                                </a>
+                                <div class="small text-muted font-mono">@acc.Customer.CustomerCode</div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">@acc.AccountType.Name</span></td>
+                            <td class="small text-muted">@acc.Branch.BranchName</td>
+                            <td class="fw-bold fs-6 text-success">@acc.Balance.ToString("C2")</td>
+                            <td>
+                                <span class="badge-status @statusBadge">
+                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> @acc.Status
+                                </span>
+                            </td>
+                            <td class="small text-muted">@acc.OpenedDate.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@acc.AccountId" class="btn btn-sm btn-outline-primary" title="Details">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                <a asp-action="Statement" asp-route-id="@acc.AccountId" class="btn btn-sm btn-outline-secondary" title="Statement">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
+                                @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+                                {
+                                    <a asp-controller="Transaction" asp-action="Deposit" asp-route-accountId="@acc.AccountId" class="btn btn-sm btn-outline-success" title="Deposit Cash">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="p-3 d-flex justify-content-between align-items-center border-top">
+            <span class="small text-muted">Showing page @Model.PageNumber of @Model.TotalPages (@Model.TotalItems accounts)</span>
+            <ul class="pagination pagination-sm mb-0">
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-searchTerm="@Model.SearchTerm" asp-route-accountTypeId="@Model.AccountTypeId" asp-route-statusFilter="@Model.StatusFilter">@p</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>

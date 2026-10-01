@@ -1,0 +1,137 @@
+@model BankingManagementSystem.Web.ViewModels.AccountDetailsViewModel
+@{
+    ViewData["Title"] = $"Account Statement - {Model.Account.AccountNumber}";
+    var totalDeposits = Model.RecentTransactions.Where(t => t.TransactionType == TransactionType.DEPOSIT || t.TransactionType == TransactionType.TRANSFER_IN).Sum(t => t.Amount);
+    var totalDebits = Model.RecentTransactions.Where(t => t.TransactionType == TransactionType.WITHDRAWAL || t.TransactionType == TransactionType.TRANSFER_OUT || t.TransactionType == TransactionType.LOAN_PAYMENT).Sum(t => t.Amount);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+        <h1 class="page-title">Account Statement</h1>
+        <div class="page-subtitle">Historical transaction ledger and balance movement statement</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Details" asp-route-id="@Model.Account.AccountId" class="btn btn-outline-secondary btn-sm">
+            &larr; Back to Account
+        </a>
+        <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" onclick="window.print();">
+            <i class="fa-solid fa-print me-1"></i> Print Statement
+        </button>
+    </div>
+</div>
+
+<!-- Statement Filter (No print) -->
+<div class="bank-card p-3 mb-4 no-print">
+    <form method="get" class="row g-2 align-items-center">
+        <input type="hidden" name="id" value="@Model.Account.AccountId" />
+        <div class="col-md-4">
+            <label class="form-label small fw-bold text-secondary mb-1">From Date</label>
+            <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-bold text-secondary mb-1">To Date</label>
+            <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-sm btn-primary w-100">Update Period</button>
+        </div>
+    </form>
+</div>
+
+<!-- Formal Statement Document -->
+<div class="bank-card p-4">
+    <!-- Statement Bank Header -->
+    <div class="row align-items-center pb-4 mb-4 border-bottom">
+        <div class="col-sm-6">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="brand-icon" style="width: 38px; height: 38px; font-size: 1.1rem;">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0 text-dark">SecureBank Enterprise</h4>
+                    <span class="small text-muted">Official Statement of Account</span>
+                </div>
+            </div>
+            <div class="small text-muted">
+                Branch: @Model.Account.Branch.BranchName<br />
+                Address: @Model.Account.Branch.Address<br />
+                Routing Number: @Model.Account.Branch.RoutingNumber
+            </div>
+        </div>
+
+        <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+            <div class="small text-muted">Statement Generated</div>
+            <div class="fw-bold">@DateTime.UtcNow.ToString("MMMM dd, yyyy HH:mm:ss") UTC</div>
+            <div class="small text-muted mt-2">Statement Period</div>
+            <div class="fw-semibold text-primary">@ViewBag.FromDate &mdash; @ViewBag.ToDate</div>
+        </div>
+    </div>
+
+    <!-- Account Details Strip -->
+    <div class="row g-3 p-3 mb-4 rounded bg-light border">
+        <div class="col-md-3">
+            <div class="small text-muted">Account Holder</div>
+            <div class="fw-bold text-dark">@Model.Account.Customer.FullName</div>
+            <div class="font-mono small text-secondary">@Model.Account.Customer.CustomerCode</div>
+        </div>
+        <div class="col-md-3">
+            <div class="small text-muted">Account Number</div>
+            <div class="font-mono fw-bold text-primary fs-5">@Model.Account.AccountNumber</div>
+            <div class="small text-muted">@Model.Account.AccountType.Name</div>
+        </div>
+        <div class="col-md-3">
+            <div class="small text-muted">Period Inflow / Outflow</div>
+            <div class="small text-success fw-semibold">+@totalDeposits.ToString("C2")</div>
+            <div class="small text-danger fw-semibold">-@totalDebits.ToString("C2")</div>
+        </div>
+        <div class="col-md-3 text-md-end">
+            <div class="small text-muted">Current Ledger Balance</div>
+            <div class="fw-bold text-success fs-4 font-mono">@Model.Account.Balance.ToString("C2")</div>
+        </div>
+    </div>
+
+    <!-- Ledger Table -->
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Reference</th>
+                    <th>Narrative / Description</th>
+                    <th>Type</th>
+                    <th class="text-end">Debit (-)</th>
+                    <th class="text-end">Credit (+)</th>
+                    <th class="text-end">Running Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.RecentTransactions.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No transactions recorded in selected statement interval.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var txn in Model.RecentTransactions)
+                    {
+                        var isCredit = txn.TransactionType == TransactionType.DEPOSIT || txn.TransactionType == TransactionType.TRANSFER_IN;
+                        <tr>
+                            <td class="small text-muted">@txn.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="font-mono small text-primary">@txn.TransactionReference</td>
+                            <td class="small">@txn.Description</td>
+                            <td><span class="badge bg-light text-dark border">@txn.TransactionType</span></td>
+                            <td class="text-end font-mono text-danger">@(isCredit ? "-" : txn.Amount.ToString("C2"))</td>
+                            <td class="text-end font-mono text-success">@(isCredit ? txn.Amount.ToString("C2") : "-")</td>
+                            <td class="text-end font-mono fw-bold">@txn.BalanceAfterTransaction.ToString("C2")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4 pt-3 border-top text-center text-muted small">
+        This is a computer-generated bank statement issued under SecureBank Cryptographic Security protocols and does not require a physical signature.
+    </div>
+</div>
