@@ -1,0 +1,133 @@
+@model BankingManagementSystem.Web.ViewModels.LoanApplicationViewModel
+@{
+    ViewData["Title"] = "Apply for Loan";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Credit Facility Application</h1>
+        <div class="page-subtitle">Configure loan parameters with real-time actuarial EMI computation</div>
+    </div>
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to Facilities</a>
+</div>
+
+<div class="row g-4">
+    <!-- Application Form -->
+    <div class="col-lg-7">
+        <div class="bank-card">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">Loan Parameters & Terms</h5>
+            </div>
+            <div class="bank-card-body">
+                <form asp-action="Apply" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+                    {
+                        <div class="mb-3">
+                            <label asp-for="CustomerId" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="CustomerId" class="form-select" asp-items="Model.Customers">
+                                <option value="">-- Select Active Customer --</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+                    }
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="LoanType" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="LoanType" class="form-select" asp-items="Html.GetEnumSelectList<LoanType>()"></select>
+                            <span asp-validation-for="LoanType" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="AccountId" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="AccountId" class="form-select font-mono" asp-items="Model.CustomerAccounts">
+                                <option value="">-- Linked Account --</option>
+                            </select>
+                            <span asp-validation-for="AccountId" class="text-danger small"></span>
+                            <div class="form-text small text-muted">Account for fund disbursement and repayments.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PrincipalAmount" class="form-label small fw-bold text-secondary"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="PrincipalAmount" id="PrincipalAmount" class="form-control font-mono fw-bold" type="number" step="100" min="100" />
+                            </div>
+                            <span asp-validation-for="PrincipalAmount" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label asp-for="InterestRate" class="form-label small fw-bold text-secondary"></label>
+                            <div class="input-group">
+                                <input asp-for="InterestRate" id="InterestRate" class="form-control font-mono fw-bold" type="number" step="0.05" min="0.1" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <span asp-validation-for="InterestRate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label asp-for="DurationMonths" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="DurationMonths" id="DurationMonths" class="form-control font-mono fw-bold" type="number" min="1" max="360" />
+                            <span asp-validation-for="DurationMonths" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Remarks" class="form-label small fw-bold text-secondary"></label>
+                            <textarea asp-for="Remarks" class="form-control" rows="2" placeholder="Purpose of funds (e.g. Home renovation, Working capital, Vehicle acquisition)"></textarea>
+                            <span asp-validation-for="Remarks" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Dynamic EMI Computation Box -->
+    <div class="col-lg-5">
+        <div class="bank-card p-4" style="background: linear-gradient(135deg, #0f172a, #1e3a8a); color: #fff;">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="fa-solid fa-calculator text-warning fs-4"></i>
+                <h5 class="fw-bold mb-0 text-white">Live Repayment Estimator</h5>
+            </div>
+            <p class="small text-light opacity-75 mb-4">Values recalculate instantaneously as you modify principal, annual interest percentage, or duration months.</p>
+
+            <div class="p-3 rounded mb-3" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div class="small text-light opacity-75 mb-1 text-uppercase" style="letter-spacing: 0.5px;">Estimated Monthly EMI</div>
+                <div class="display-6 fw-bold text-warning font-mono" id="emiMonthlyDisplay">$0.00</div>
+                <div class="small text-white-50 mt-1">Due on the 1st of every calendar month</div>
+            </div>
+
+            <div class="row g-2 text-white">
+                <div class="col-6">
+                    <div class="p-3 rounded h-100" style="background: rgba(0, 0, 0, 0.25);">
+                        <div class="small text-white-50">Total Interest</div>
+                        <div class="fw-bold fs-5 font-mono text-light" id="emiInterestDisplay">$0.00</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded h-100" style="background: rgba(0, 0, 0, 0.25);">
+                        <div class="small text-white-50">Total Repayment</div>
+                        <div class="fw-bold fs-5 font-mono text-light" id="emiTotalDisplay">$0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 small text-white-50">
+                <i class="fa-solid fa-info-circle me-1"></i> Calculated using standard reducing-balance actuarial compounding formulas.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

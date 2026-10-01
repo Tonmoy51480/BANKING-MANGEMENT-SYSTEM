@@ -1,0 +1,171 @@
+@model BankingManagementSystem.Core.Entities.Loan
+@{
+    ViewData["Title"] = $"Loan - {Model.LoanNumber}";
+    var statusBadge = Model.Status == LoanStatus.Active ? "badge-active" :
+                      Model.Status == LoanStatus.Pending ? "badge-pending" :
+                      Model.Status == LoanStatus.Completed ? "badge-info" : "badge-danger";
+}
+
+<div class="page-header">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="page-title font-mono">@Model.LoanNumber</h1>
+            <span class="badge bg-primary">@Model.LoanType Loan</span>
+            <span class="badge-status @statusBadge">@Model.Status</span>
+        </div>
+        <div class="page-subtitle">
+            Customer: <a asp-controller="Customer" asp-action="Details" asp-route-id="@Model.CustomerId" class="fw-bold text-dark">@Model.Customer.FullName</a>
+            &bull; Linked Account: <span class="font-mono fw-semibold text-primary">@Model.Account?.AccountNumber</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Loans</a>
+        @if (Model.Status == LoanStatus.Active && Model.RemainingBalance > 0)
+        {
+            <a asp-action="Pay" asp-route-id="@Model.LoanId" class="btn btn-success btn-sm shadow-sm">
+                <i class="fa-solid fa-dollar-sign me-1"></i> Make Repayment
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Admin Decision Strip (if Pending and Admin) -->
+@if (Model.Status == LoanStatus.Pending && User.IsInRole(Roles.Admin))
+{
+    <div class="bank-card p-3 mb-4 bg-warning bg-opacity-10 border border-warning">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="fw-bold text-dark"><i class="fa-solid fa-gavel me-1"></i> Credit Committee Action Required:</span>
+                <span class="small text-muted d-block">Approving this facility will immediately credit @Model.PrincipalAmount.ToString("C2") into the customer's account @Model.Account?.AccountNumber.</span>
+            </div>
+            <div class="d-flex gap-2">
+                <form asp-action="Approve" asp-route-id="@Model.LoanId" method="post" onsubmit="return confirm('Approve loan and disburse principal funds immediately?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-success px-3">
+                        <i class="fa-solid fa-check me-1"></i> Approve & Disburse
+                    </button>
+                </form>
+
+                <button type="button" class="btn btn-sm btn-danger px-3" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="fa-solid fa-xmark me-1"></i> Reject Loan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="Reject" asp-route-id="@Model.LoanId" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reject Loan Application</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Reason for Rejection / Notes</label>
+                            <textarea name="reason" class="form-control" rows="3" required placeholder="Specify risk or eligibility rationale..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger btn-sm">Confirm Rejection</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Metrics Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-card-title">Principal Disbursed</div>
+            <div class="stat-card-value font-mono">@Model.PrincipalAmount.ToString("C2")</div>
+            <div class="stat-card-footer">
+                <span>Interest: @Model.InterestRate% p.a.</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-card-title">Monthly EMI</div>
+            <div class="stat-card-value font-mono text-primary">@Model.MonthlyPayment.ToString("C2")</div>
+            <div class="stat-card-footer">
+                <span>Tenure: @Model.DurationMonths Months</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-card-title">Total Repayable</div>
+            <div class="stat-card-value font-mono">@Model.TotalRepaymentAmount.ToString("C2")</div>
+            <div class="stat-card-footer">
+                <span>Principal + Actuarial Interest</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: @(Model.RemainingBalance > 0 ? "linear-gradient(135deg, #7f1d1d, #b91c1c)" : "linear-gradient(135deg, #065f46, #047857)"); color: #fff;">
+            <div class="stat-card-title text-light opacity-75">Remaining Balance</div>
+            <div class="stat-card-value text-white font-mono">@Model.RemainingBalance.ToString("C2")</div>
+            <div class="stat-card-footer text-light opacity-75">
+                <span>@(Model.RemainingBalance == 0 ? "Fully Settled" : "Active Amortization")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments History Table -->
+<div class="bank-card">
+    <div class="bank-card-header">
+        <h5 class="bank-card-title">
+            <i class="fa-solid fa-list-check text-primary me-2"></i> Repayment History & Ledger (@Model.LoanPayments.Count())
+        </h5>
+        @if (Model.Status == LoanStatus.Active && Model.RemainingBalance > 0)
+        {
+            <a asp-action="Pay" asp-route-id="@Model.LoanId" class="btn btn-sm btn-primary">Make Payment</a>
+        }
+    </div>
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Payment Date</th>
+                    <th>Reference</th>
+                    <th>Payment Amount</th>
+                    <th>Principal Portion</th>
+                    <th>Interest Portion</th>
+                    <th>Remaining Balance</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.LoanPayments.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No installment repayments recorded yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var payment in Model.LoanPayments)
+                    {
+                        <tr>
+                            <td class="small text-muted">@payment.PaymentDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="font-mono small text-primary fw-semibold">@payment.TransactionReference</td>
+                            <td class="fw-bold font-mono text-success">@payment.Amount.ToString("C2")</td>
+                            <td class="font-mono small">@payment.PrincipalComponent.ToString("C2")</td>
+                            <td class="font-mono small text-danger">@payment.InterestComponent.ToString("C2")</td>
+                            <td class="font-mono fw-bold">@payment.RemainingBalance.ToString("C2")</td>
+                            <td class="small">@payment.Notes</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

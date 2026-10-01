@@ -1,0 +1,120 @@
+@model BankingManagementSystem.Web.ViewModels.LoanListViewModel
+@{
+    ViewData["Title"] = "Loan Facilities";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Credit & Loan Facilities</h1>
+        <div class="page-subtitle">Personal, mortgage, and business term loans with automated EMI scheduling</div>
+    </div>
+    <div>
+        <a asp-action="Apply" class="btn btn-primary px-3 shadow-sm">
+            <i class="fa-solid fa-plus me-1"></i> Apply For Loan
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bank-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control form-control-sm" placeholder="Search loan #, customer name..." />
+        </div>
+        <div class="col-md-3">
+            <select name="statusFilter" class="form-select form-select-sm">
+                <option value="">-- All Statuses --</option>
+                @foreach (LoanStatus status in Enum.GetValues(typeof(LoanStatus)))
+                {
+                    <option value="@status" selected="@(Model.StatusFilter == status)">@status</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="typeFilter" class="form-select form-select-sm">
+                <option value="">-- All Types --</option>
+                @foreach (LoanType type in Enum.GetValues(typeof(LoanType)))
+                {
+                    <option value="@type" selected="@(Model.TypeFilter == type)">@type</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Loans Table -->
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Loan Number</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Principal</th>
+                    <th>Rate (%)</th>
+                    <th>Tenure</th>
+                    <th>Monthly EMI</th>
+                    <th>Remaining</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Loans.Any())
+                {
+                    <tr>
+                        <td colspan="10" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-hand-holding-dollar fs-3 d-block mb-2"></i>
+                            No loan records found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var loan in Model.Loans)
+                    {
+                        var statusBadge = loan.Status == LoanStatus.Active ? "badge-active" :
+                                          loan.Status == LoanStatus.Pending ? "badge-pending" :
+                                          loan.Status == LoanStatus.Completed ? "badge-info" : "badge-danger";
+                        <tr>
+                            <td class="font-mono fw-bold text-primary small">@loan.LoanNumber</td>
+                            <td>
+                                <div class="fw-semibold text-dark">@loan.Customer.FullName</div>
+                                <div class="small text-muted font-mono">@loan.Customer.CustomerCode</div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">@loan.LoanType</span></td>
+                            <td class="fw-bold font-mono">@loan.PrincipalAmount.ToString("C2")</td>
+                            <td>@loan.InterestRate%</td>
+                            <td>@loan.DurationMonths mos</td>
+                            <td class="text-primary font-mono fw-semibold">@loan.MonthlyPayment.ToString("C2")</td>
+                            <td class="fw-bold font-mono @(loan.RemainingBalance > 0 ? "text-danger" : "text-success")">
+                                @loan.RemainingBalance.ToString("C2")
+                            </td>
+                            <td>
+                                <span class="badge-status @statusBadge">
+                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> @loan.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@loan.LoanId" class="btn btn-sm btn-outline-primary" title="Details">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                @if (loan.Status == LoanStatus.Active && loan.RemainingBalance > 0)
+                                {
+                                    <a asp-action="Pay" asp-route-id="@loan.LoanId" class="btn btn-sm btn-outline-success" title="Pay Installment">
+                                        <i class="fa-solid fa-dollar-sign"></i>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,78 @@
+@model BankingManagementSystem.Web.ViewModels.LoanPaymentViewModel
+@{
+    ViewData["Title"] = $"Repay Loan - {Model.LoanNumber}";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="bank-card">
+            <div class="bank-card-header bg-success bg-opacity-10">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="stat-card-icon icon-emerald" style="width: 40px; height: 40px; font-size: 1.15rem;">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                    </div>
+                    <div>
+                        <h5 class="bank-card-title text-success mb-0">Loan Installment Settlement</h5>
+                        <div class="small text-muted">Direct automatic debit from linked repayment account</div>
+                    </div>
+                </div>
+                <a asp-action="Details" asp-route-id="@Model.LoanId" class="btn btn-sm btn-outline-secondary">Loan Details</a>
+            </div>
+
+            <div class="bank-card-body">
+                <div class="row g-3 p-3 mb-4 rounded bg-light border">
+                    <div class="col-6">
+                        <div class="small text-muted">Loan Number</div>
+                        <div class="font-mono fw-bold text-primary">@Model.LoanNumber</div>
+                    </div>
+                    <div class="col-6 text-end">
+                        <div class="small text-muted">Remaining Debt</div>
+                        <div class="font-mono fw-bold text-danger fs-5">@Model.RemainingBalance.ToString("C2")</div>
+                    </div>
+                    <div class="col-6 border-top pt-2">
+                        <div class="small text-muted">Standard Monthly EMI</div>
+                        <div class="font-mono fw-bold">@Model.MonthlyPayment.ToString("C2")</div>
+                    </div>
+                    <div class="col-6 border-top pt-2 text-end">
+                        <div class="small text-muted">Repayment Account (@Model.LinkedAccountNumber) Balance</div>
+                        <div class="font-mono fw-bold text-success">@Model.LinkedAccountBalance.ToString("C2")</div>
+                    </div>
+                </div>
+
+                <form asp-action="Pay" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="LoanId" />
+                    <input type="hidden" asp-for="LoanNumber" />
+                    <input type="hidden" asp-for="RemainingBalance" />
+                    <input type="hidden" asp-for="MonthlyPayment" />
+                    <input type="hidden" asp-for="LinkedAccountNumber" />
+                    <input type="hidden" asp-for="LinkedAccountBalance" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label small fw-bold text-secondary"></label>
+                        <div class="input-group">
+                            <span class="input-group-text font-mono fw-bold">$</span>
+                            <input asp-for="Amount" class="form-control form-control-lg font-mono fw-bold" type="number" step="0.01" min="0.01" max="@Model.RemainingBalance" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger small"></span>
+                        <div class="form-text small text-muted">
+                            You may pay the exact monthly EMI or any lump sum up to the remaining balance of @Model.RemainingBalance.ToString("C2").
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <button type="submit" class="btn btn-success px-4 fw-semibold shadow-sm" onclick="return confirm('Authorize deduction from your account for this loan payment?');">
+                            <i class="fa-solid fa-check me-2"></i> Confirm Repayment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
