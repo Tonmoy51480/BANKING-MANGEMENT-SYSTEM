@@ -1,0 +1,76 @@
+@model IEnumerable<BankingManagementSystem.Core.Entities.Transfer>
+@{
+    ViewData["Title"] = "Transfer History";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Fund Transfer History</h1>
+        <div class="page-subtitle">Settled transfer vouchers and counterparty movement records</div>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn btn-primary btn-sm px-3 shadow-sm">
+            <i class="fa-solid fa-paper-plane me-1"></i> New Transfer
+        </a>
+    </div>
+</div>
+
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Transfer Date</th>
+                    <th>Originating Account</th>
+                    <th>Destination Account</th>
+                    <th>Amount</th>
+                    <th>Narrative</th>
+                    <th>Status</th>
+                    <th>Voucher</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-money-bill-transfer fs-3 d-block mb-2"></i>
+                            No transfer history found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var trf in Model)
+                    {
+                        <tr>
+                            <td class="font-mono fw-bold text-primary small">@trf.TransferReference</td>
+                            <td class="small text-muted">@trf.TransferDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                <div class="font-mono small fw-semibold">@trf.SenderAccount.AccountNumber</div>
+                                <div class="small text-muted">@trf.SenderAccount.Customer?.FullName</div>
+                            </td>
+                            <td>
+                                <div class="font-mono small fw-semibold">@trf.ReceiverAccount.AccountNumber</div>
+                                <div class="small text-muted">@trf.ReceiverAccount.Customer?.FullName</div>
+                            </td>
+                            <td class="fw-bold font-mono text-dark">@trf.Amount.ToString("C2")</td>
+                            <td class="small">@trf.Description</td>
+                            <td>
+                                <span class="badge-status badge-active">
+                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> @trf.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Receipt" asp-route-reference="@trf.TransferReference" class="btn btn-sm btn-light border py-0 px-2" title="View Receipt">
+                                    <i class="fa-solid fa-receipt text-primary"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

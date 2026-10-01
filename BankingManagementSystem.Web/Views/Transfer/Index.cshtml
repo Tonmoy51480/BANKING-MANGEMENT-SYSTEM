@@ -1,0 +1,102 @@
+@model BankingManagementSystem.Web.ViewModels.TransferViewModel
+@{
+    ViewData["Title"] = "Inter-Account Fund Transfer";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="bank-card">
+            <div class="bank-card-header bg-primary bg-opacity-10">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="stat-card-icon icon-blue" style="width: 40px; height: 40px; font-size: 1.15rem;">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                    </div>
+                    <div>
+                        <h5 class="bank-card-title text-primary mb-0">Secure Fund Transfer</h5>
+                        <div class="small text-muted">Instant internal ledger clearance with atomic rollback safeguards</div>
+                    </div>
+                </div>
+                <a asp-action="History" class="btn btn-sm btn-outline-secondary">Transfer History</a>
+            </div>
+
+            <div class="bank-card-body">
+                <form asp-action="Index" method="post" id="transferForm">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    <!-- Step 1: Sender Account -->
+                    <div class="mb-3">
+                        <label asp-for="SenderAccountNumber" class="form-label small fw-bold text-secondary"></label>
+                        <select asp-for="SenderAccountNumber" class="form-select font-mono" asp-items="Model.SenderAccounts">
+                            <option value="">-- Choose Originating Account --</option>
+                        </select>
+                        <span asp-validation-for="SenderAccountNumber" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Quick Beneficiaries Chips if Customer -->
+                    @if (Model.Beneficiaries != null && Model.Beneficiaries.Any())
+                    {
+                        <div class="mb-3">
+                            <span class="small fw-semibold text-secondary d-block mb-1">Quick Select Saved Beneficiary:</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var ben in Model.Beneficiaries)
+                                {
+                                    <button type="button" class="btn btn-sm btn-light border select-beneficiary-btn text-start py-1 px-2" data-account="@ben.AccountNumber">
+                                        <i class="fa-solid fa-user me-1 text-primary"></i>
+                                        <strong>@ben.Name</strong>
+                                        <span class="small font-mono text-muted">(@ben.AccountNumber)</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Step 2: Receiver Account with live AJAX verification -->
+                    <div class="mb-3">
+                        <label asp-for="ReceiverAccountNumber" class="form-label small fw-bold text-secondary"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-arrow-right-to-bracket text-secondary"></i></span>
+                            <input asp-for="ReceiverAccountNumber" id="ReceiverAccountNumber" class="form-control font-mono fw-semibold" placeholder="e.g. BD-BNK-10000002" autocomplete="off" />
+                        </div>
+                        <div id="recipientLookupFeedback"></div>
+                        <span asp-validation-for="ReceiverAccountNumber" class="text-danger small"></span>
+                        <div class="form-text small text-muted">The recipient's legal name and branch will be dynamically verified above as you type.</div>
+                    </div>
+
+                    <!-- Step 3: Transfer Amount -->
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label small fw-bold text-secondary"></label>
+                        <div class="input-group">
+                            <span class="input-group-text font-mono fw-bold">$</span>
+                            <input asp-for="Amount" class="form-control form-control-lg font-mono fw-bold" placeholder="0.00" type="number" step="0.01" min="0.01" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Step 4: Narrative -->
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label small fw-bold text-secondary"></label>
+                        <input asp-for="Description" class="form-control" placeholder="e.g. Invoice settlement, family support, vendor payment" />
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Security Alert -->
+                    <div class="p-3 mb-4 rounded bg-light border small text-muted">
+                        <i class="fa-solid fa-shield-check text-primary me-1"></i>
+                        <strong>Strict Transactional Integrity:</strong> Sender and recipient accounts cannot be identical. The transfer requires available balance above the minimum threshold. If any failure occurs during balance adjustment or ledger entry creation, the entire operation is automatically rolled back.
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm" onclick="return confirm('Please confirm this transfer. Funds will be deducted immediately.');">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Authorize & Transfer Funds
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
