@@ -1,0 +1,135 @@
+@model BankingManagementSystem.Web.ViewModels.TransactionListViewModel
+@{
+    ViewData["Title"] = "Transaction Ledger";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Transaction Ledger</h1>
+        <div class="page-subtitle">Audited financial movements, deposits, withdrawals, and inter-bank transfers</div>
+    </div>
+    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+    {
+        <div class="d-flex gap-2">
+            <a asp-action="Deposit" class="btn btn-outline-success btn-sm px-3">
+                <i class="fa-solid fa-circle-arrow-down me-1"></i> Deposit Cash
+            </a>
+            <a asp-action="Withdraw" class="btn btn-outline-danger btn-sm px-3">
+                <i class="fa-solid fa-circle-arrow-up me-1"></i> Withdraw Cash
+            </a>
+            <a asp-controller="Transfer" asp-action="Index" class="btn btn-primary btn-sm px-3 shadow-sm">
+                <i class="fa-solid fa-paper-plane me-1"></i> Transfer Funds
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="bank-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control form-control-sm" placeholder="Search reference, description..." />
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="accountNumber" value="@Model.AccountNumber" class="form-control form-control-sm font-mono" placeholder="Account Number" />
+        </div>
+        <div class="col-md-2">
+            <select name="typeFilter" class="form-select form-select-sm">
+                <option value="">-- All Types --</option>
+                @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
+                {
+                    <option value="@type" selected="@(Model.TypeFilter == type)">@type</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="date" name="fromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-2">
+            <input type="date" name="toDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-1 d-flex gap-1">
+            <button type="submit" class="btn btn-sm btn-primary w-100" title="Filter"><i class="fa-solid fa-filter"></i></button>
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary" title="Reset"><i class="fa-solid fa-rotate"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Transactions Table -->
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Date & Time</th>
+                    <th>Account</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Status</th>
+                    <th>Receipt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Transactions.Any())
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-receipt fs-3 d-block mb-2"></i>
+                            No transactions found matching your criteria.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var txn in Model.Transactions)
+                    {
+                        var isCredit = txn.TransactionType == TransactionType.DEPOSIT || txn.TransactionType == TransactionType.TRANSFER_IN;
+                        <tr>
+                            <td class="font-mono fw-bold small text-primary">@txn.TransactionReference</td>
+                            <td class="small text-secondary">@txn.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="font-mono small">@txn.Account.AccountNumber</td>
+                            <td class="small fw-semibold text-dark">@txn.Account.Customer?.FullName</td>
+                            <td>
+                                <span class="badge @(isCredit ? "bg-success" : "bg-danger") bg-opacity-10 text-@(isCredit ? "success" : "danger") border border-@(isCredit ? "success" : "danger") border-opacity-25">
+                                    @txn.TransactionType
+                                </span>
+                            </td>
+                            <td class="fw-bold @(isCredit ? "text-success" : "text-danger")">
+                                @(isCredit ? "+" : "-")@txn.Amount.ToString("C2")
+                            </td>
+                            <td class="font-mono small text-secondary">@txn.BalanceAfterTransaction.ToString("C2")</td>
+                            <td>
+                                <span class="badge-status badge-active">
+                                    <i class="fa-solid fa-circle" style="font-size: 6px;"></i> @txn.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Receipt" asp-route-reference="@txn.TransactionReference" class="btn btn-sm btn-light border py-0 px-2" title="Print Transaction Receipt">
+                                    <i class="fa-solid fa-receipt text-primary"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="p-3 d-flex justify-content-between align-items-center border-top">
+            <span class="small text-muted">Page @Model.PageNumber of @Model.TotalPages (@Model.TotalItems transactions)</span>
+            <ul class="pagination pagination-sm mb-0">
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-searchTerm="@Model.SearchTerm" asp-route-accountNumber="@Model.AccountNumber" asp-route-typeFilter="@Model.TypeFilter" asp-route-statusFilter="@Model.StatusFilter">@p</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>

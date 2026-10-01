@@ -1,0 +1,76 @@
+@model BankingManagementSystem.Web.ViewModels.WithdrawalViewModel
+@{
+    ViewData["Title"] = "Cash Withdrawal Desk";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="bank-card">
+            <div class="bank-card-header bg-danger bg-opacity-10">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="stat-card-icon icon-rose" style="width: 38px; height: 38px; font-size: 1.1rem;">
+                        <i class="fa-solid fa-circle-arrow-up"></i>
+                    </div>
+                    <div>
+                        <h5 class="bank-card-title text-danger mb-0">Teller Cash Withdrawal Desk</h5>
+                        <div class="small text-muted">Strict validation against available balance, minimum threshold, and daily limit</div>
+                    </div>
+                </div>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Transaction Ledger</a>
+            </div>
+
+            <div class="bank-card-body">
+                <form asp-action="Withdraw" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="AccountId" class="form-label small fw-bold text-secondary"></label>
+                        <select asp-for="AccountId" class="form-select" asp-items="ViewBag.AccountList">
+                            <option value="">-- Choose Debiting Bank Account --</option>
+                        </select>
+                        <span asp-validation-for="AccountId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Amount" class="form-label small fw-bold text-secondary"></label>
+                        <div class="input-group">
+                            <span class="input-group-text font-mono fw-bold">$</span>
+                            <input asp-for="Amount" id="withdrawAmount" class="form-control form-control-lg font-mono fw-bold" placeholder="0.00" type="number" step="0.01" min="0.01" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger small"></span>
+
+                        <!-- Quick Chips -->
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-light border py-1 px-2" onclick="$('#withdrawAmount').val(100)">$100</button>
+                            <button type="button" class="btn btn-sm btn-light border py-1 px-2" onclick="$('#withdrawAmount').val(500)">$500</button>
+                            <button type="button" class="btn btn-sm btn-light border py-1 px-2" onclick="$('#withdrawAmount').val(1000)">$1,000</button>
+                            <button type="button" class="btn btn-sm btn-light border py-1 px-2" onclick="$('#withdrawAmount').val(2000)">$2,000</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label small fw-bold text-secondary"></label>
+                        <input asp-for="Description" class="form-control" placeholder="e.g. Over-the-counter cash withdrawal" />
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="p-3 mb-3 rounded bg-light border small text-muted">
+                        <i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>
+                        <strong>Guardrail Protections:</strong> Withdrawal cannot exceed available balance or violate minimum balance thresholds. Daily withdrawal ceilings are actively checked across all teller counters.
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-danger px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-arrow-up-from-bracket me-2"></i> Confirm Cash Payout
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
