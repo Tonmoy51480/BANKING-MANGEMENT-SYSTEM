@@ -1,0 +1,54 @@
+@model IEnumerable<BankingManagementSystem.Core.Entities.Notification>
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Notifications & Security Alerts</h1>
+        <div class="page-subtitle">Real-time alerts, transactional notifications, and account state events</div>
+    </div>
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <form asp-action="MarkAllRead" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="fa-solid fa-check-double me-1"></i> Mark All as Read
+            </button>
+        </form>
+    }
+</div>
+
+<div class="bank-card">
+    <div class="list-group list-group-flush">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="fa-regular fa-bell-slash fs-2 d-block mb-2"></i>
+                You have no notifications or alerts.
+            </div>
+        }
+        else
+        {
+            @foreach (var notif in Model)
+            {
+                var iconClass = notif.Type == "Success" ? "fa-circle-check text-success" :
+                                notif.Type == "Warning" ? "fa-triangle-exclamation text-warning" :
+                                notif.Type == "Danger" ? "fa-circle-exclamation text-danger" : "fa-circle-info text-primary";
+
+                <div class="list-group-item p-3 @(!notif.IsRead ? "bg-light bg-opacity-75" : "")">
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="fa-solid @iconClass fs-4 mt-1"></i>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="fw-bold mb-1 text-dark">@notif.Title</h6>
+                                <span class="small text-muted">@notif.CreatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+                            <p class="text-secondary small mb-0">@notif.Message</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
