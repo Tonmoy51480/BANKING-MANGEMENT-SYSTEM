@@ -1,0 +1,92 @@
+@model BankingManagementSystem.Web.ViewModels.CardListViewModel
+@{
+    ViewData["Title"] = "Card Management";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Debit & Credit Cards</h1>
+        <div class="page-subtitle">Manage payment cards, status locks, and linked account associations</div>
+    </div>
+    <div>
+        <a asp-action="Issue" class="btn btn-primary px-3 shadow-sm">
+            <i class="fa-solid fa-plus me-1"></i> Issue New Card
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    @if (!Model.Cards.Any())
+    {
+        <div class="col-12 text-center py-5 text-muted">
+            <i class="fa-solid fa-credit-card fs-2 d-block mb-2"></i>
+            No active cards found in portfolio.
+        </div>
+    }
+    else
+    {
+        @foreach (var card in Model.Cards)
+        {
+            var isDebit = card.CardType == CardType.Debit;
+            var isBlocked = card.Status == CardStatus.Blocked;
+
+            <div class="col-md-6 col-xl-4">
+                <div class="bank-card p-3">
+                    <!-- Physical Card UI Representation -->
+                    <div class="virtual-card @(isDebit ? "debit-blue" : "credit-gold") mb-3 shadow">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small fw-bold text-uppercase text-light opacity-75">SecureBank Enterprise</span>
+                            <span class="badge @(isBlocked ? "bg-danger" : "bg-success")">@card.Status</span>
+                        </div>
+
+                        <div class="card-chip"></div>
+
+                        <div class="card-num text-white">@card.CardNumberMasked</div>
+
+                        <div class="card-footer text-white">
+                            <div>
+                                <div class="small opacity-75 text-uppercase" style="font-size: 0.65rem;">Cardholder</div>
+                                <div class="fw-bold small text-uppercase">@card.CardHolderName</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small opacity-75 text-uppercase" style="font-size: 0.65rem;">Expires</div>
+                                <div class="font-mono small fw-bold">@card.ExpiryDate.ToString("MM/yy")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Meta & Actions -->
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <div class="small text-muted">
+                            Linked: <span class="font-mono fw-semibold text-primary">@card.Account.AccountNumber</span>
+                        </div>
+                        <div>
+                            @if (card.Status == CardStatus.Active)
+                            {
+                                <form asp-action="ChangeStatus" method="post" class="d-inline" onsubmit="return confirm('Block this card?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cardId" value="@card.CardId" />
+                                    <input type="hidden" name="status" value="@CardStatus.Blocked" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fa-solid fa-lock me-1"></i> Block Card
+                                    </button>
+                                </form>
+                            }
+                            else if (card.Status == CardStatus.Blocked)
+                            {
+                                <form asp-action="ChangeStatus" method="post" class="d-inline" onsubmit="return confirm('Re-activate this card?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cardId" value="@card.CardId" />
+                                    <input type="hidden" name="status" value="@CardStatus.Active" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="fa-solid fa-lock-open me-1"></i> Unblock Card
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

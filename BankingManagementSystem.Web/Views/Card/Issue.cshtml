@@ -1,0 +1,72 @@
+@model BankingManagementSystem.Web.ViewModels.CardIssueViewModel
+@{
+    ViewData["Title"] = "Issue Debit Card";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="bank-card">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-credit-card text-primary me-2"></i> Issue New Payment Card
+                </h5>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to Cards</a>
+            </div>
+
+            <div class="bank-card-body">
+                <form asp-action="Issue" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Employee))
+                    {
+                        <div class="mb-3">
+                            <label asp-for="CustomerId" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="CustomerId" class="form-select" asp-items="Model.Customers">
+                                <option value="">-- Select Active Customer --</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="AccountId" class="form-label small fw-bold text-secondary"></label>
+                        <select asp-for="AccountId" class="form-select font-mono" asp-items="Model.CustomerAccounts">
+                            <option value="">-- Choose Account to Link --</option>
+                        </select>
+                        <span asp-validation-for="AccountId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="CardType" class="form-label small fw-bold text-secondary"></label>
+                            <select asp-for="CardType" class="form-select" asp-items="Html.GetEnumSelectList<CardType>()"></select>
+                            <span asp-validation-for="CardType" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CardHolderName" class="form-label small fw-bold text-secondary"></label>
+                            <input asp-for="CardHolderName" class="form-control" placeholder="Cardholder embossing name" />
+                            <span asp-validation-for="CardHolderName" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 my-3 rounded bg-light border small text-muted">
+                        <i class="fa-solid fa-shield-halved text-success me-1"></i>
+                        <strong>PCI-DSS Safe Masking:</strong> Full card primary account numbers (PAN), CVVs, and PINs are never stored in unencrypted form. A securely masked display format is maintained.
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-check me-2"></i> Issue Card
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
