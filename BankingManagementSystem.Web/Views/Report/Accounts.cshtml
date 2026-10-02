@@ -1,0 +1,59 @@
+@model IEnumerable<BankingManagementSystem.Core.Entities.Account>
+@{
+    ViewData["Title"] = "Account Portfolio Report";
+}
+
+<div class="page-header no-print">
+    <div>
+        <h1 class="page-title">Account Portfolio Report</h1>
+        <div class="page-subtitle">Deposit and transaction account distribution and liquidity audit</div>
+    </div>
+    <div>
+        <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" onclick="window.print();">
+            <i class="fa-solid fa-print me-1"></i> Print Report
+        </button>
+    </div>
+</div>
+
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Account Number</th>
+                    <th>Customer Name</th>
+                    <th>Account Type</th>
+                    <th>Branch</th>
+                    <th>Current Balance</th>
+                    <th>Minimum Required</th>
+                    <th>Status</th>
+                    <th>Opened</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">No accounts found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var a in Model)
+                    {
+                        <tr>
+                            <td class="font-mono fw-bold text-primary small">@a.AccountNumber</td>
+                            <td class="fw-semibold">@a.Customer.FullName</td>
+                            <td><span class="badge bg-light text-dark border">@a.AccountType.Name</span></td>
+                            <td class="small text-muted">@a.Branch.BranchName</td>
+                            <td class="fw-bold font-mono text-success">@a.Balance.ToString("C2")</td>
+                            <td class="font-mono small text-secondary">@a.MinimumBalance.ToString("C2")</td>
+                            <td><span class="badge-status badge-active">@a.Status</span></td>
+                            <td class="small text-muted">@a.OpenedDate.ToString("MMM dd, yyyy")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

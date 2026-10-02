@@ -1,0 +1,67 @@
+@model IEnumerable<BankingManagementSystem.Core.Entities.Loan>
+@{
+    ViewData["Title"] = "Credit & Loan Portfolio Report";
+}
+
+<div class="page-header no-print">
+    <div>
+        <h1 class="page-title">Credit & Loan Facilities Report</h1>
+        <div class="page-subtitle">Amortization schedules, risk exposure, and repayment performance</div>
+    </div>
+    <div>
+        <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" onclick="window.print();">
+            <i class="fa-solid fa-print me-1"></i> Print Report
+        </button>
+    </div>
+</div>
+
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Loan Number</th>
+                    <th>Customer Name</th>
+                    <th>Facility Type</th>
+                    <th>Principal Amount</th>
+                    <th>Annual Rate</th>
+                    <th>Tenure</th>
+                    <th>Monthly EMI</th>
+                    <th>Remaining Debt</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">No loans found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var l in Model)
+                    {
+                        <tr>
+                            <td class="font-mono small fw-bold text-primary">@l.LoanNumber</td>
+                            <td class="fw-semibold">@l.Customer.FullName</td>
+                            <td><span class="badge bg-light text-dark border">@l.LoanType</span></td>
+                            <td class="font-mono fw-semibold">@l.PrincipalAmount.ToString("C2")</td>
+                            <td>@l.InterestRate%</td>
+                            <td>@l.DurationMonths mos</td>
+                            <td class="font-mono text-primary">@l.MonthlyPayment.ToString("C2")</td>
+                            <td class="font-mono fw-bold @(l.RemainingBalance > 0 ? "text-danger" : "text-success")">
+                                @l.RemainingBalance.ToString("C2")
+                            </td>
+                            <td>
+                                <span class="badge @(l.Status == LoanStatus.Active ? "bg-success" : l.Status == LoanStatus.Pending ? "bg-warning text-dark" : "bg-secondary")">
+                                    @l.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

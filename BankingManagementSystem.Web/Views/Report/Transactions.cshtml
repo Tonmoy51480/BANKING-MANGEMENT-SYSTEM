@@ -1,0 +1,106 @@
+@model IEnumerable<BankingManagementSystem.Core.Entities.Transaction>
+@{
+    ViewData["Title"] = "Transaction Report";
+    var filter = ViewBag.Filter as BankingManagementSystem.Core.DTOs.TransactionReportFilterDto;
+}
+
+<div class="page-header no-print">
+    <div>
+        <h1 class="page-title">Transaction Audit Report</h1>
+        <div class="page-subtitle">Audited financial movements with multi-parameter filtering and CSV data export</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportTransactionsCsv" asp-route-FromDate="@filter?.FromDate" asp-route-ToDate="@filter?.ToDate" asp-route-AccountNumber="@filter?.AccountNumber" asp-route-TransactionType="@filter?.TransactionType" asp-route-Status="@filter?.Status" class="btn btn-outline-success btn-sm px-3">
+            <i class="fa-solid fa-file-csv me-1"></i> Export to CSV
+        </a>
+        <button type="button" class="btn btn-primary btn-sm px-3 shadow-sm" onclick="window.print();">
+            <i class="fa-solid fa-print me-1"></i> Print Report
+        </button>
+    </div>
+</div>
+
+<!-- Filters Form -->
+<div class="bank-card p-3 mb-4 no-print">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold text-secondary mb-1">From Date</label>
+            <input type="date" name="FromDate" value="@filter?.FromDate?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold text-secondary mb-1">To Date</label>
+            <input type="date" name="ToDate" value="@filter?.ToDate?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold text-secondary mb-1">Account Number</label>
+            <input type="text" name="AccountNumber" value="@filter?.AccountNumber" class="form-control form-control-sm font-mono" placeholder="Filter by Account #" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold text-secondary mb-1">Type</label>
+            <select name="TransactionType" class="form-select form-select-sm">
+                <option value="">-- All Types --</option>
+                @foreach (TransactionType type in Enum.GetValues(typeof(TransactionType)))
+                {
+                    <option value="@type" selected="@(filter?.TransactionType == type.ToString())">@type</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-sm btn-primary w-100">Apply Filter</button>
+            <a asp-action="Transactions" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Data Table -->
+<div class="bank-card">
+    <div class="bank-card-header">
+        <h5 class="bank-card-title">Settled Records (@Model.Count())</h5>
+    </div>
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Date & Time</th>
+                    <th>Account</th>
+                    <th>Customer Name</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance After</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">No transactions found matching specified criteria.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var txn in Model)
+                    {
+                        var isCredit = txn.TransactionType == TransactionType.DEPOSIT || txn.TransactionType == TransactionType.TRANSFER_IN;
+                        <tr>
+                            <td class="font-mono small fw-bold text-primary">@txn.TransactionReference</td>
+                            <td class="small text-muted">@txn.TransactionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="font-mono small">@txn.Account.AccountNumber</td>
+                            <td class="small fw-semibold">@txn.Account.Customer?.FullName</td>
+                            <td>
+                                <span class="badge @(isCredit ? "bg-success" : "bg-danger") bg-opacity-10 text-@(isCredit ? "success" : "danger") border border-@(isCredit ? "success" : "danger") border-opacity-25">
+                                    @txn.TransactionType
+                                </span>
+                            </td>
+                            <td class="font-mono fw-bold @(isCredit ? "text-success" : "text-danger")">
+                                @(isCredit ? "+" : "-")@txn.Amount.ToString("C2")
+                            </td>
+                            <td class="font-mono small text-secondary">@txn.BalanceAfterTransaction.ToString("C2")</td>
+                            <td><span class="badge-status badge-active">@txn.Status</span></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
