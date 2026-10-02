@@ -1,0 +1,70 @@
+@model IEnumerable<BankingManagementSystem.Core.Entities.Beneficiary>
+@{
+    ViewData["Title"] = "Beneficiary Management";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Saved Beneficiaries</h1>
+        <div class="page-subtitle">Pre-authorized payees and counterparties for fast transfer settlement</div>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn btn-primary px-3 shadow-sm">
+            <i class="fa-solid fa-user-plus me-1"></i> Add Beneficiary
+        </a>
+    </div>
+</div>
+
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Payee Name</th>
+                    <th>Account Number</th>
+                    <th>Bank Name</th>
+                    <th>Nickname</th>
+                    <th>Saved On</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-address-book fs-3 d-block mb-2"></i>
+                            No saved transfer beneficiaries found.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var ben in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold text-dark">@ben.Name</div>
+                            </td>
+                            <td class="font-mono fw-bold text-primary">@ben.AccountNumber</td>
+                            <td><span class="badge bg-light text-dark border">@ben.BankName</span></td>
+                            <td class="text-muted small">@(ben.Nickname ?? "-")</td>
+                            <td class="text-secondary small">@ben.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end">
+                                <a asp-controller="Transfer" asp-action="Index" class="btn btn-sm btn-outline-primary" title="Send Money">
+                                    <i class="fa-solid fa-paper-plane me-1"></i> Send Money
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@ben.BeneficiaryId" method="post" class="d-inline" onsubmit="return confirm('Remove this beneficiary?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

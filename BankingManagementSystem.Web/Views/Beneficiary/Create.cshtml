@@ -1,0 +1,58 @@
+@model BankingManagementSystem.Web.ViewModels.BeneficiaryViewModel
+@{
+    ViewData["Title"] = "Add Beneficiary";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="bank-card">
+            <div class="bank-card-header">
+                <h5 class="bank-card-title">
+                    <i class="fa-solid fa-address-book text-primary me-2"></i> Register New Transfer Beneficiary
+                </h5>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to List</a>
+            </div>
+
+            <div class="bank-card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2 mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="AccountNumber" class="form-label small fw-bold text-secondary"></label>
+                        <input asp-for="AccountNumber" class="form-control font-mono fw-bold" placeholder="e.g. BD-BNK-10000003" />
+                        <span asp-validation-for="AccountNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label small fw-bold text-secondary"></label>
+                        <input asp-for="Name" class="form-control" placeholder="Beneficiary Legal Full Name" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="BankName" class="form-label small fw-bold text-secondary"></label>
+                        <input asp-for="BankName" class="form-control" placeholder="e.g. SecureBank Enterprise" />
+                        <span asp-validation-for="BankName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Nickname" class="form-label small fw-bold text-secondary"></label>
+                        <input asp-for="Nickname" class="form-control" placeholder="Optional short label (e.g. Landlord, Land, Mum)" />
+                        <span asp-validation-for="Nickname" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                            <i class="fa-solid fa-check me-2"></i> Save Beneficiary
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
