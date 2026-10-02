@@ -1,0 +1,95 @@
+@model IEnumerable<BankingManagementSystem.Core.Entities.AuditLog>
+@{
+    ViewData["Title"] = "System Audit Trail";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Enterprise System Audit Trail</h1>
+        <div class="page-subtitle">Immutable operational logs, security events, and compliance ledger</div>
+    </div>
+    <span class="badge bg-danger px-3 py-2 text-uppercase">
+        <i class="fa-solid fa-shield-halved me-1"></i> Admin Clearances Only
+    </span>
+</div>
+
+<!-- Search & Filter -->
+<div class="bank-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" class="form-control form-control-sm" placeholder="Search by user ID, description, entity, action..." />
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="actionFilter" value="@ViewBag.ActionFilter" class="form-control form-control-sm" placeholder="Filter by action name (e.g. Deposit, Fund Transfer, User Login)" />
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Audit Log Table -->
+<div class="bank-card">
+    <div class="bank-table-responsive">
+        <table class="bank-table">
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Timestamp (UTC)</th>
+                    <th>Action</th>
+                    <th>Target Entity</th>
+                    <th>Entity ID</th>
+                    <th>Description</th>
+                    <th>IP Address</th>
+                    <th>User ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">No audit trail records found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var log in Model)
+                    {
+                        <tr>
+                            <td class="font-mono small text-secondary">#@log.AuditLogId</td>
+                            <td class="small text-muted font-mono">@log.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 font-mono">
+                                    @log.Action
+                                </span>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">@log.EntityName</span></td>
+                            <td class="font-mono small text-secondary">@log.EntityId</td>
+                            <td class="small" style="max-width: 320px;">@log.Description</td>
+                            <td class="font-mono small text-muted">@(log.IpAddress ?? "127.0.0.1")</td>
+                            <td class="font-mono small text-muted text-truncate" style="max-width: 120px;" title="@log.UserId">
+                                @(log.UserId ?? "System")
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="p-3 d-flex justify-content-between align-items-center border-top">
+            <span class="small text-muted">Page @ViewBag.PageNumber of @ViewBag.TotalPages (@ViewBag.TotalItems records)</span>
+            <ul class="pagination pagination-sm mb-0">
+                @for (int p = 1; p <= ViewBag.TotalPages; p++)
+                {
+                    <li class="page-item @(p == ViewBag.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-searchTerm="@ViewBag.SearchTerm" asp-route-actionFilter="@ViewBag.ActionFilter">@p</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div>
