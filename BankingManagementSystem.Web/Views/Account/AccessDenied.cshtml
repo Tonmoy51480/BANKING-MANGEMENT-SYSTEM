@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="container py-5 text-center">
+    <div class="py-5">
+        <div class="stat-card-icon icon-rose mx-auto mb-4" style="width: 70px; height: 70px; font-size: 2rem;">
+            <i class="fa-solid fa-lock"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Access Denied (403)</h2>
+        <p class="text-secondary lead mb-4">
+            You do not possess the required security clearances or administrative roles to access this banking resource.
+        </p>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary px-4">
+            <i class="fa-solid fa-arrow-left me-2"></i> Return to Dashboard
+        </a>
+    </div>
+</div>

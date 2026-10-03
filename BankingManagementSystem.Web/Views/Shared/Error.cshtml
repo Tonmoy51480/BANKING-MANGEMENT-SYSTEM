@@ -1,0 +1,25 @@
+@model BankingManagementSystem.Web.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container py-5 text-center">
+    <div class="py-5">
+        <div class="stat-card-icon icon-rose mx-auto mb-4" style="width: 70px; height: 70px; font-size: 2rem;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Something went wrong</h2>
+        <p class="text-secondary lead mb-4">
+            Something went wrong while processing your request. Please try again later or contact bank support.
+        </p>
+        @if (Model?.ShowRequestId == true)
+        {
+            <div class="small text-muted font-mono mb-4">
+                Tracking Incident Reference: <code>@Model.RequestId</code>
+            </div>
+        }
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4">
+            <i class="fa-solid fa-house me-2"></i> Return to Home
+        </a>
+    </div>
+</div>
