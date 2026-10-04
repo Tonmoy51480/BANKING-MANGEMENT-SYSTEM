@@ -1,0 +1,29 @@
+name: Build & Test Banking Management System
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore BankingManagementSystem.sln
+
+    - name: Build Solution
+      run: dotnet build BankingManagementSystem.sln --configuration Release --no-restore
+
+    - name: Run Automated Tests
+      run: dotnet test BankingManagementSystem.Tests/BankingManagementSystem.Tests.csproj --configuration Release --no-build --verbosity normal
