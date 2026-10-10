@@ -359,29 +359,6 @@ dotnet test BankingManagementSystem.Tests/BankingManagementSystem.Tests.csproj
 | `/Report/Transactions` | GET | Admin, Employee | Transaction audit report with CSV export |
 | `/AuditLog/Index` | GET | Admin | System audit trail with action filtering and IP attribution |
 
----
-
-## 11. Git Commit History & Development Methodology
-
-The project was constructed following phased enterprise development milestones:
-
-* `feat: initialize 4-layer .NET 8 solution and dependency wiring`
-* `feat: create domain entities, enums, DTOs, and repository contracts`
-* `feat: configure ApplicationDbContext with SQL Server and EF Core migrations`
-* `feat: implement ASP.NET Core Identity authentication and role-based policies`
-* `feat: implement Customer KYC onboarding, profiles, and state governance`
-* `feat: implement Bank Account management with auto-generated numbering`
-* `feat: implement atomic cash Deposit and Withdrawal modules with limit checks`
-* `feat: implement ACID Fund Transfer with automated rollback on failure`
-* `feat: implement Loan management with interactive EMI calculation and disbursements`
-* `feat: implement Card management with PCI-DSS safe masking`
-* `feat: build responsive Executive and Customer Dashboards with Chart.js`
-* `feat: implement financial reporting suite with CSV export and print stylesheets`
-* `feat: configure persistent system Audit Logging and notification feeds`
-* `test: add unit test suite covering financial logic, rollbacks, and limits`
-* `docs: add comprehensive project README and architecture documentation`
-
----
 
 ## License & Credits
 
